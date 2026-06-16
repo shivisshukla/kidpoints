@@ -2,138 +2,539 @@
 <html lang="en">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>KidPoints Cloud Tracker</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>KidPoints Elite</title>
     
+    <!-- PWA Settings -->
     <link rel="manifest" href="manifest.json">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/180/000000/coins.png">
+    
+    <!-- Premium Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
     <style>
-        :root { --green: #2ecc71; --red: #e74c3c; --blue: #3498db; --dark: #2c3e50; --light: #f8f9fa; }
-        body { font-family: sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; color: var(--dark); }
-        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
-        h1, h3 { text-align: center; }
-        .score-board { text-align: center; background: linear-gradient(135deg, #34495e, #2c3e50); color: white; padding: 20px; border-radius: 12px; font-weight: bold; margin-bottom: 25px; position: relative; }
-        .score-board span { display: block; font-size: 48px; color: #f1c40f; }
-        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
-        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
-        .btn-green { background-color: var(--green); color: white; }
-        .parent-tools { margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee; }
-        .parent-tools input, .parent-tools select { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
-        .history-list { max-height: 200px; overflow-y: auto; background: var(--light); padding: 10px; border-radius: 8px; list-style: none; margin: 0; }
-        .history-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #ddd; font-size: 13px; }
-        .loading-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44,62,80,0.9); border-radius: 12px; align-items: center; justify-content: center; color: white; }
+        :root { 
+            --bg-gradient: linear-gradient(135deg, #f5f7fa 0%, #e4e8f0 100%);
+            --panel-bg: rgba(255, 255, 255, 0.85);
+            --primary: #4F46E5; /* Premium Indigo */
+            --primary-light: #EEF2F6;
+            --success: #10B981; /* Emerald Green */
+            --danger: #EF4444; /* Vivid Coral */
+            --text-main: #0F172A; /* Deep Slate */
+            --text-muted: #64748B; /* Elegant Gray */
+            --accent-gold: #F59E0B; /* Luxury Gold */
+            --radius-lg: 24px;
+            --radius-md: 16px;
+            --shadow-sm: 0 4px 6px -1px rgba(0,0,0,0.03), 0 2px 4px -1px rgba(0,0,0,0.02);
+            --shadow-xl: 0 20px 25px -5px rgba(15, 23, 42, 0.08), 0 10px 10px -5px rgba(15, 23, 42, 0.04);
+        }
+
+        body { 
+            font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif; 
+            background: var(--bg-gradient);
+            margin: 0; 
+            padding: 0; 
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            -webkit-tap-highlight-color: transparent;
+        }
         
-        /* Native-feeling Install Banner */
-        .install-banner { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #34495e; color: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 9999; justify-content: space-between; align-items: center; }
-        .install-btn { background: var(--green); color: white; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; }
+        /* Master Container Frame */
+        .app-frame { 
+            width: 100%;
+            max-width: 460px; 
+            background: rgba(255, 255, 255, 0.6);
+            backdrop-filter: blur(20px);
+            -webkit-backdrop-filter: blur(20px);
+            min-height: 100vh;
+            box-sizing: border-box;
+            padding: 24px 24px 100px 24px;
+            position: relative;
+            box-shadow: 0 0 40px rgba(0, 0, 0, 0.03);
+        }
+        
+        /* Header Branding */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 24px;
+            padding: 4px 0;
+        }
+        header h1 {
+            margin: 0;
+            font-size: 22px;
+            font-weight: 800;
+            letter-spacing: -0.5px;
+            background: linear-gradient(135deg, var(--text-main) 0%, #475569 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        .user-badge {
+            background: white;
+            padding: 6px 12px;
+            border-radius: 100px;
+            font-size: 13px;
+            font-weight: 700;
+            color: var(--primary);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        
+        /* Apple-Style Glass HUD Scoreboard */
+        .hud-scoreboard { 
+            background: linear-gradient(135deg, #1E293B 0%, #0F172A 100%);
+            color: white; 
+            padding: 32px 24px; 
+            border-radius: var(--radius-lg); 
+            text-align: center;
+            position: relative;
+            box-shadow: var(--shadow-xl);
+            overflow: hidden;
+            margin-bottom: 32px;
+        }
+        .hud-scoreboard::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(79, 70, 229, 0.15) 0%, transparent 60%);
+            pointer-events: none;
+        }
+        .hud-title {
+            font-size: 13px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #94A3B8;
+            font-weight: 700;
+        }
+        .hud-balance { 
+            display: block; 
+            font-size: 58px; 
+            color: white; 
+            font-weight: 800;
+            margin-top: 4px;
+            letter-spacing: -2px;
+        }
+        .hud-balance span {
+            color: var(--accent-gold);
+            margin-right: 4px;
+            font-weight: 400;
+        }
+        
+        /* Navigation Engine Layout */
+        .tab-view { display: none; animation: fadeIn 0.4s ease-out forwards; }
+        .tab-view.active { display: block; }
+        
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(8px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .dock-bar {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: calc(100% - 40px);
+            max-width: 420px;
+            background: rgba(15, 23, 42, 0.95);
+            backdrop-filter: blur(10px);
+            -webkit-backdrop-filter: blur(10px);
+            display: flex;
+            padding: 10px;
+            border-radius: 20px;
+            box-shadow: 0 10px 30px rgba(15, 23, 42, 0.15);
+            z-index: 1000;
+            box-sizing: border-box;
+        }
+        .dock-item {
+            flex: 1;
+            text-align: center;
+            padding: 10px 0;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 700;
+            color: #94A3B8;
+            transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 4px;
+            border-radius: 12px;
+        }
+        .dock-item.active {
+            color: white;
+            background: rgba(255, 255, 255, 0.1);
+        }
+        .dock-icon {
+            font-size: 18px;
+        }
+
+        /* Section Typography */
+        .section-label { 
+            font-size: 15px; 
+            font-weight: 800;
+            letter-spacing: -0.2px;
+            color: var(--text-main); 
+            margin: 0 0 16px 0;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        /* Luxury Interactive Grid Layout */
+        .action-deck { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin-bottom: 32px;}
+        
+        .deck-btn { 
+            padding: 18px 16px; 
+            border: 1px solid rgba(255,255,255,0.7); 
+            border-radius: var(--radius-md); 
+            font-weight: 700; 
+            cursor: pointer; 
+            font-size: 14px; 
+            font-family: inherit;
+            display: flex;
+            flex-direction: column;
+            align-items: flex-start;
+            gap: 8px;
+            background: white;
+            box-shadow: var(--shadow-sm);
+            transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+            position: relative;
+            overflow: hidden;
+        }
+        .deck-btn:active { transform: scale(0.97); box-shadow: none; }
+        .deck-btn .btn-val {
+            font-size: 13px;
+            padding: 2px 8px;
+            border-radius: 100px;
+            font-weight: 800;
+        }
+        
+        /* Modern Control Card Configurations */
+        .premium-card {
+            background: white;
+            padding: 24px;
+            border-radius: var(--radius-lg);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255,255,255,0.8);
+        }
+        
+        /* Segmented Option Control */
+        .segmented-control {
+            display: flex;
+            background: #F1F5F9;
+            padding: 4px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+        }
+        .segment-option {
+            flex: 1;
+            text-align: center;
+            padding: 10px 4px;
+            font-size: 12px;
+            font-weight: 700;
+            cursor: pointer;
+            border-radius: 9px;
+            transition: all 0.2s;
+            color: var(--text-muted);
+        }
+        .segment-option.selected {
+            background: white;
+            color: var(--text-main);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .form-group {
+            margin-bottom: 18px;
+        }
+        .form-group label {
+            display: block;
+            font-size: 12px;
+            font-weight: 700;
+            color: var(--text-muted);
+            margin-bottom: 6px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .premium-card input { 
+            width: 100%; 
+            padding: 14px 16px; 
+            border: 1px solid #E2E8F0; 
+            border-radius: 12px; 
+            box-sizing: border-box; 
+            font-size: 15px;
+            font-family: inherit;
+            background: #F8FAFC;
+            transition: all 0.2s;
+            color: var(--text-main);
+            font-weight: 500;
+        }
+        .premium-card input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: white;
+            box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+        }
+        
+        .action-master-btn {
+            width: 100%;
+            padding: 16px;
+            background: var(--primary);
+            color: white;
+            border: none;
+            border-radius: 14px;
+            font-weight: 700;
+            font-size: 15px;
+            font-family: inherit;
+            cursor: pointer;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.25);
+            transition: all 0.2s;
+            margin-top: 8px;
+        }
+        .action-master-btn:active {
+            transform: scale(0.98);
+            opacity: 0.9;
+        }
+        
+        /* Premium Log Items */
+        .history-stack { 
+            padding: 0; 
+            list-style: none; 
+            margin: 0; 
+        }
+        .log-card { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center;
+            padding: 16px 20px; 
+            background: white;
+            margin-bottom: 12px;
+            border-radius: var(--radius-md);
+            box-shadow: var(--shadow-sm);
+            border: 1px solid rgba(255,255,255,0.7);
+            transition: transform 0.2s;
+        }
+        .log-meta strong { display: block; font-size: 15px; color: var(--text-main); font-weight: 700; margin-bottom: 2px;}
+        .log-meta small { color: var(--text-muted); font-size: 12px; font-weight: 500;}
+        .log-pill { font-weight: 800; font-size: 16px; padding: 4px 12px; border-radius: 100px;}
+
+        /* Sync System Architecture UI overlay */
+        .sync-layer { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px); border-radius: var(--radius-lg); align-items: center; justify-content: center; color: white; font-weight: 700; font-size: 15px; z-index: 50; }
+        .spinner { width: 24px; height: 24px; border: 3px solid rgba(255,255,255,0.3); border-top-color: white; border-radius: 50%; animation: spin 0.8s linear infinite; margin-right: 12px;}
+        @keyframes spin { to { transform: rotate(360deg); } }
+        
+        /* Modern Smart Banner Notification Structure */
+        .pwa-banner { display: none; position: fixed; bottom: 95px; left: 50%; transform: translateX(-50%); width: calc(100% - 48px); max-width: 412px; background: #0F172A; color: white; padding: 14px 20px; border-radius: 16px; box-shadow: 0 20px 25px -5px rgba(0,0,0,0.3); z-index: 9999; justify-content: space-between; align-items: center; box-sizing: border-box; animation: fadeIn 0.4s ease-out; }
+        .pwa-install-trigger { background: var(--primary); color: white; padding: 8px 16px; border-radius: 10px; border: none; cursor: pointer; font-size: 13px; font-weight: 700; }
     </style>
 </head>
 <body>
 
-<div id="installBanner" class="install-banner">
-    <span>📱 Add <strong>KidPoints</strong> to your Home Screen?</span>
-    <button id="btnInstall" class="install-btn">Install</button>
+<div id="installBanner" class="pwa-banner">
+    <span style="font-size: 13px; font-weight: 600;">📱 Add App to your home screen?</span>
+    <button id="btnInstall" class="pwa-install-trigger">Install</button>
 </div>
 
-<div class="container">
-    <h1>🪙 KidPoints Cloud</h1>
-    <div class="score-board">
-        <div id="loading" class="loading-overlay">Syncing with Cloud...</div>
-        Current Balance <span id="totalPoints">0</span> Points
+<div class="app-frame">
+    <header>
+        <h1>KidPoints Elite</h1>
+        <div class="user-badge">Cloud Engine v2</div>
+    </header>
+
+    <!-- Master Scoreboard Unit Container Panel -->
+    <div class="hud-scoreboard">
+        <div id="loading" class="sync-layer"><div class="spinner"></div>Updating Ledger...</div>
+        <div class="hud-title">Available Ecosystem Balance</div>
+        <div class="hud-balance" id="totalPoints"><span>🪙</span>0</div>
     </div>
-    <h3>⚡ Quick Actions</h3>
-    <div id="actionButtons" class="grid"></div>
-    
-    <div class="parent-tools">
-        <h3>🛠️ Parent Controls</h3>
-        <select id="actionType"><option value="bonus">🌟 Custom Bonus</option><option value="redeem">🎁 Redeem Points</option><option value="penalty">⚠️ Custom Penalty</option></select>
-        <input type="text" id="customReason" placeholder="Reason..."><input type="number" id="customAmount" placeholder="Points...">
-        <button class="btn-green" style="width:100%; background-color: var(--blue);" onclick="handleParentAction()">Apply Action</button>
+
+    <!-- VIEWPORT ACTIVE CONTROLLER TAB 1: EXECUTIVE PRESET ACTIONS -->
+    <div id="dashboardTab" class="tab-view active">
+        <div class="section-label">⚡ Micro-Actions Deck</div>
+        <div id="actionButtons" class="action-deck"></div>
+        
+        <div class="section-label">⚙️ Parental Command Core</div>
+        <div class="premium-card">
+            <div class="segmented-control">
+                <div class="segment-option selected" id="opt-bonus" onclick="setParentMode('bonus')">🌟 Bonus</div>
+                <div class="segment-option" id="opt-redeem" onclick="setParentMode('redeem')">🎁 Redeem</div>
+                <div class="segment-option" id="opt-penalty" onclick="setParentMode('penalty')">⚠️ Penalty</div>
+            </div>
+
+            <div class="form-group">
+                <label for="customReason">Transaction Reason</label>
+                <input type="text" id="customReason" placeholder="e.g., Exceptional Room Cleanup">
+            </div>
+
+            <div class="form-group">
+                <label for="customAmount">Ledger Value Allocation</label>
+                <input type="number" id="customAmount" placeholder="0">
+            </div>
+
+            <button class="action-master-btn" onclick="handleParentAction()">Execute Allocation</button>
+        </div>
     </div>
-    <h3>📜 History Log</h3>
-    <ul id="historyLog" class="history-list"></ul>
+
+    <!-- VIEWPORT ACTIVE CONTROLLER TAB 2: HISTORY LOG -->
+    <div id="historyTab" class="tab-view">
+        <div class="section-label">📜 System Ledger Audit Trail</div>
+        <ul id="historyLog" class="history-stack"></ul>
+    </div>
+</div>
+
+<!-- Modern App Dock Navigation System Footer -->
+<div class="dock-bar">
+    <div class="dock-item active" id="navDash" onclick="switchTab('dashboard')">
+        <span class="dock-icon">⚡</span>
+        <span>Dashboard</span>
+    </div>
+    <div class="dock-item" id="navHistory" onclick="switchTab('history')">
+        <span class="dock-icon">📜</span>
+        <span>Ledger Log</span>
+    </div>
 </div>
 
 <script>
-    // --- APP CONFIGURATION ---
+    // --- APP CONFIGURATION API PORT MAP ---
     const API_URL = "https://script.google.com/macros/s/AKfycbzSDtO9ZaXMrDSbJS0nyC0BagFJTZn55THE7Rog2VgI5pgJq_hiAbz9SVZOOoV2ULhMnw/exec"; 
 
     const pointMap = [
-        { label: "Food Without Phone", points: 2, color: "var(--green)" },
-        { label: "Less Phone", points: 1, color: "var(--green)" },
-        { label: "Well Bebehaviour", points: 1, color: "var(--green)" },
-        { label: "Learn New Skill", points: 5, color: "var(--green)" },
-        { label: "Extra Ordinary", points: 2, color: "var(--green)" },
-        { label: "Backtalk", points: -1, color: "var(--red)" },
-        { label: "Bad Bebehaviour", points: -1, color: "var(--red)" },
-        { label: "Lot of Phone", points: -1, color: "var(--red)" }
+        { label: "Food Without Phone", points: 2, bg: "#E6F4EA", text: "var(--success)" },
+        { label: "Less Phone", points: 1, bg: "#E6F4EA", text: "var(--success)" },
+        { label: "Well Behaviour", points: 1, bg: "#E6F4EA", text: "var(--success)" },
+        { label: "Learn New Skill", points: 5, bg: "#E6F4EA", text: "var(--success)" },
+        { label: "Extra Ordinary", points: 2, bg: "#E6F4EA", text: "var(--success)" },
+        { label: "Backtalk", points: -1, bg: "#FCE8E6", text: "var(--danger)" },
+        { label: "Bad Behaviour", points: -1, bg: "#FCE8E6", text: "var(--danger)" },
+        { label: "Lot of Phone", points: -1, bg: "#FCE8E6", text: "var(--danger)" }
     ];
+
+    let selectedParentMode = 'bonus';
+
+    function setParentMode(mode) {
+        selectedParentMode = mode;
+        document.querySelectorAll('.segment-option').forEach(function(el) { el.classList.remove('selected'); });
+        document.getElementById('opt-' + mode).classList.add('selected');
+    }
+
+    function switchTab(tabName) {
+        document.querySelectorAll('.tab-view').forEach(function(el) { el.classList.remove('active'); });
+        document.querySelectorAll('.dock-item').forEach(function(el) { el.classList.remove('active'); });
+        
+        if (tabName === 'dashboard') {
+            document.getElementById('dashboardTab').classList.add('active');
+            document.getElementById('navDash').classList.add('active');
+        } else {
+            document.getElementById('historyTab').classList.add('active');
+            document.getElementById('navHistory').classList.add('active');
+        }
+    }
 
     function refreshData() {
         showLoading(true);
         fetch(API_URL)
-        .then(res => res.json())
-        .then(data => {
-            document.getElementById('totalPoints').innerText = data.points;
-            document.getElementById('historyLog').innerHTML = data.history.slice().reverse().map(item => `
-                <li class="history-item">
-                    <span><strong>${item.reason}</strong><br><small style="color:#888;">${item.date}</small></span>
-                    <span style="color:${item.amount > 0 ? 'green' : 'red'}">${item.amount > 0 ? '+' : ''}${item.amount} pts</span>
-                </li>
-            `).join('');
+        .then(function(res) { return res.json(); })
+        .then(function(data) {
+            document.getElementById('totalPoints').innerHTML = '<span>🪙</span>' + data.points.toLocaleString();
+            
+            if (!data.history || data.history.length === 0) {
+                document.getElementById('historyLog').innerHTML = `
+                    <div style="text-align:center; padding: 60px 24px; color: var(--text-muted); font-size: 14px; font-weight:600;">
+                        ✨ No logged tracking ledger steps processed yet.
+                    </div>`;
+            } else {
+                document.getElementById('historyLog').innerHTML = data.history.slice().reverse().map(function(item) {
+                    var isPositive = item.amount > 0;
+                    var pillBg = isPositive ? '#E6F4EA' : '#FCE8E6';
+                    var pillText = isPositive ? 'var(--success)' : 'var(--danger)';
+                    return `
+                        <li class="log-card">
+                            <div class="log-meta">
+                                <strong>${item.reason}</strong>
+                                <small>${item.date}</small>
+                            </div>
+                            <div class="log-pill" style="background:${pillBg}; color:${pillText};">
+                                ${isPositive ? '+' : ''}${item.amount}
+                            </div>
+                        </li>
+                    `;
+                }).join('');
+            }
             showLoading(false);
+        })
+        .catch(function(err) { 
+            console.error(err);
+            showLoading(false); 
         });
     }
 
-    function adjustPoints(amount, reason, type = 'standard') {
+    function adjustPoints(amount, reason, type) {
+        type = type || 'standard';
         showLoading(true);
         fetch(API_URL, {
             method: "POST",
-            body: JSON.stringify({ amount, reason, type })
+            body: JSON.stringify({ amount: amount, reason: reason, type: type })
         })
-        .then(res => res.json())
-        .then(res => {
+        .then(function(res) { return res.json(); })
+        .then(function(res) {
             if(!res.success) alert(res.message);
             refreshData();
+        })
+        .catch(function(err) { 
+            console.error(err);
+            showLoading(false); 
         });
     }
 
     function handleParentAction() {
-        const type = document.getElementById('actionType').value;
         const reasonInput = document.getElementById('customReason');
         const amountInput = document.getElementById('customAmount');
         let amount = parseInt(amountInput.value);
         let reason = reasonInput.value.trim();
-        if(!reason || isNaN(amount)) return alert("Invalid inputs");
+        if(!reason || isNaN(amount) || amount <= 0) return alert("Please fill out all parameter entries correctly.");
         
-        let finalAmount = (type === 'bonus') ? amount : -amount;
-        let finalReason = (type === 'redeem') ? `🎁 Redeemed: ${reason}` : (type === 'bonus' ? `⭐ Bonus: ${reason}` : `⚠️ Penalty: ${reason}`);
-        adjustPoints(finalAmount, finalReason, type);
+        let finalAmount = (selectedParentMode === 'bonus') ? amount : -amount;
+        let finalReason = (selectedParentMode === 'redeem') ? '🎁 Redeemed: ' + reason : (selectedParentMode === 'bonus' ? '⭐ Bonus: ' + reason : '⚠️ Penalty: ' + reason);
+        
+        adjustPoints(finalAmount, finalReason, selectedParentMode);
         reasonInput.value = ''; amountInput.value = '';
     }
 
     function renderButtons() {
         const container = document.getElementById('actionButtons');
-        pointMap.forEach(action => {
+        pointMap.forEach(function(action) {
             const btn = document.createElement('button');
-            btn.className = 'btn-green'; btn.style.backgroundColor = action.color;
-            btn.innerText = `${action.label} (${action.points > 0 ? '+' : ''}${action.points})`;
-            btn.onclick = () => adjustPoints(action.points, action.label);
+            btn.className = 'deck-btn';
+            btn.innerHTML = `
+                <span style="color: var(--text-main); font-weight:700; text-align:left;">${action.label}</span>
+                <span class="btn-val" style="background:${action.bg}; color:${action.text};">
+                    ${action.points > 0 ? '+' : ''}${action.points} pts
+                </span>
+            `;
+            btn.onclick = function() { adjustPoints(action.points, action.label); };
             container.appendChild(btn);
         });
     }
+    
     function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
 
-    // --- TRUE PWA SYSTEM POPUP CODE ---
+    // --- PWA NATIVE CONTROLLER HOOK SYSTEM ---
     let deferredPrompt;
-    window.addEventListener('beforeinstallprompt', (e) => {
+    window.addEventListener('beforeinstallprompt', function(e) {
         e.preventDefault(); deferredPrompt = e;
         document.getElementById('installBanner').style.display = 'flex';
     });
-    document.getElementById('btnInstall').addEventListener('click', async () => {
+    document.getElementById('btnInstall').addEventListener('click', async function() {
         if (!deferredPrompt) return;
         deferredPrompt.prompt();
         await deferredPrompt.userChoice;
@@ -141,12 +542,12 @@
         document.getElementById('installBanner').style.display = 'none';
     });
 
-    // Register PWA Service Worker
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js').catch(() => {});
+        navigator.serviceWorker.register('sw.js').catch(function() {});
     }
 
-    renderButtons(); refreshData();
+    renderButtons(); 
+    refreshData();
 </script>
 </body>
 </html>
