@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>KidPoints Cloud Tracker</title>
+    
+    <link rel="manifest" href="manifest.json">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="https://img.icons8.com/fluent/180/000000/coins.png">
+
+    <style>
+        :root { --green: #2ecc71; --red: #e74c3c; --blue: #3498db; --dark: #2c3e50; --light: #f8f9fa; }
+        body { font-family: sans-serif; background-color: #eef2f3; margin: 0; padding: 20px; color: var(--dark); }
+        .container { max-width: 500px; margin: 0 auto; background: white; padding: 25px; border-radius: 15px; box-shadow: 0 5px 15px rgba(0,0,0,0.08); }
+        h1, h3 { text-align: center; }
+        .score-board { text-align: center; background: linear-gradient(135deg, #34495e, #2c3e50); color: white; padding: 20px; border-radius: 12px; font-weight: bold; margin-bottom: 25px; position: relative; }
+        .score-board span { display: block; font-size: 48px; color: #f1c40f; }
+        .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+        button { padding: 12px; border: none; border-radius: 8px; font-weight: bold; cursor: pointer; font-size: 14px; }
+        .btn-green { background-color: var(--green); color: white; }
+        .parent-tools { margin-top: 25px; padding-top: 20px; border-top: 2px solid #eee; }
+        .parent-tools input, .parent-tools select { width: 100%; padding: 10px; margin: 5px 0 10px 0; border: 1px solid #ccc; border-radius: 6px; box-sizing: border-box; }
+        .history-list { max-height: 200px; overflow-y: auto; background: var(--light); padding: 10px; border-radius: 8px; list-style: none; margin: 0; }
+        .history-item { display: flex; justify-content: space-between; padding: 8px; border-bottom: 1px solid #ddd; font-size: 13px; }
+        .loading-overlay { display: none; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: rgba(44,62,80,0.9); border-radius: 12px; align-items: center; justify-content: center; color: white; }
+        
+        /* Native-feeling Install Banner */
+        .install-banner { display: none; position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); width: 90%; max-width: 400px; background: #34495e; color: white; padding: 15px; border-radius: 12px; box-shadow: 0 10px 25px rgba(0,0,0,0.3); z-index: 9999; justify-content: space-between; align-items: center; }
+        .install-btn { background: var(--green); color: white; padding: 8px 14px; border-radius: 6px; border: none; cursor: pointer; }
+    </style>
+</head>
+<body>
+
+<div id="installBanner" class="install-banner">
+    <span>📱 Add <strong>KidPoints</strong> to your Home Screen?</span>
+    <button id="btnInstall" class="install-btn">Install</button>
+</div>
+
+<div class="container">
+    <h1>🪙 KidPoints Cloud</h1>
+    <div class="score-board">
+        <div id="loading" class="loading-overlay">Syncing with Cloud...</div>
+        Current Balance <span id="totalPoints">0</span> Points
+    </div>
+    <h3>⚡ Quick Actions</h3>
+    <div id="actionButtons" class="grid"></div>
+    
+    <div class="parent-tools">
+        <h3>🛠️ Parent Controls</h3>
+        <select id="actionType"><option value="bonus">🌟 Custom Bonus</option><option value="redeem">🎁 Redeem Points</option><option value="penalty">⚠️ Custom Penalty</option></select>
+        <input type="text" id="customReason" placeholder="Reason..."><input type="number" id="customAmount" placeholder="Points...">
+        <button class="btn-green" style="width:100%; background-color: var(--blue);" onclick="handleParentAction()">Apply Action</button>
+    </div>
+    <h3>📜 History Log</h3>
+    <ul id="historyLog" class="history-list"></ul>
+</div>
+
+<script>
+    // --- APP CONFIGURATION ---
+    const API_URL = "YOUR_GOOGLE_SCRIPT_URL_HERE"; 
+
+    const pointMap = [
+        { label: "Morning Routine", points: 10, color: "var(--green)" },
+        { label: "Homework", points: 15, color: "var(--green)" },
+        { label: "Chore", points: 10, color: "var(--green)" },
+        { label: "Kindness", points: 15, color: "var(--green)" },
+        { label: "Backtalk", points: -10, color: "var(--red)" },
+        { label: "No Listening", points: -10, color: "var(--red)" }
+    ];
+
+    function refreshData() {
+        showLoading(true);
+        fetch(API_URL)
+        .then(res => res.json())
+        .then(data => {
+            document.getElementById('totalPoints').innerText = data.points;
+            document.getElementById('historyLog').innerHTML = data.history.slice().reverse().map(item => `
+                <li class="history-item">
+                    <span><strong>${item.reason}</strong><br><small style="color:#888;">${item.date}</small></span>
+                    <span style="color:${item.amount > 0 ? 'green' : 'red'}">${item.amount > 0 ? '+' : ''}${item.amount} pts</span>
+                </li>
+            `).join('');
+            showLoading(false);
+        });
+    }
+
+    function adjustPoints(amount, reason, type = 'standard') {
+        showLoading(true);
+        fetch(API_URL, {
+            method: "POST",
+            body: JSON.stringify({ amount, reason, type })
+        })
+        .then(res => res.json())
+        .then(res => {
+            if(!res.success) alert(res.message);
+            refreshData();
+        });
+    }
+
+    function handleParentAction() {
+        const type = document.getElementById('actionType').value;
+        const reasonInput = document.getElementById('customReason');
+        const amountInput = document.getElementById('customAmount');
+        let amount = parseInt(amountInput.value);
+        let reason = reasonInput.value.trim();
+        if(!reason || isNaN(amount)) return alert("Invalid inputs");
+        
+        let finalAmount = (type === 'bonus') ? amount : -amount;
+        let finalReason = (type === 'redeem') ? `🎁 Redeemed: ${reason}` : (type === 'bonus' ? `⭐ Bonus: ${reason}` : `⚠️ Penalty: ${reason}`);
+        adjustPoints(finalAmount, finalReason, type);
+        reasonInput.value = ''; amountInput.value = '';
+    }
+
+    function renderButtons() {
+        const container = document.getElementById('actionButtons');
+        pointMap.forEach(action => {
+            const btn = document.createElement('button');
+            btn.className = 'btn-green'; btn.style.backgroundColor = action.color;
+            btn.innerText = `${action.label} (${action.points > 0 ? '+' : ''}${action.points})`;
+            btn.onclick = () => adjustPoints(action.points, action.label);
+            container.appendChild(btn);
+        });
+    }
+    function showLoading(show) { document.getElementById('loading').style.display = show ? 'flex' : 'none'; }
+
+    // --- TRUE PWA SYSTEM POPUP CODE ---
+    let deferredPrompt;
+    window.addEventListener('beforeinstallprompt', (e) => {
+        e.preventDefault(); deferredPrompt = e;
+        document.getElementById('installBanner').style.display = 'flex';
+    });
+    document.getElementById('btnInstall').addEventListener('click', async () => {
+        if (!deferredPrompt) return;
+        deferredPrompt.prompt();
+        await deferredPrompt.userChoice;
+        deferredPrompt = null;
+        document.getElementById('installBanner').style.display = 'none';
+    });
+
+    // Register PWA Service Worker
+    if ('serviceWorker' in navigator) {
+        navigator.serviceWorker.register('sw.js').catch(() => {});
+    }
+
+    renderButtons(); refreshData();
+</script>
+</body>
+</html>
